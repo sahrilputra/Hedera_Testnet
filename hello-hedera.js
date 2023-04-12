@@ -1,4 +1,4 @@
-const { Client, FileCreateTransaction } = require("@hashgraph/sdk");
+const { Client, FileCreateTransaction, ContractCreateTransaction, ContractFunctionParameters } = require("@hashgraph/sdk");
 require("dotenv").config();
 
 async function helloWorld() {
@@ -21,7 +21,15 @@ async function helloWorld() {
     console.log("The smart contract byte code file ID is " + bytecodeFileId);
 
     // Part 3 - Deploy the smart contract
+    const contractTx = await new ContractCreateTransaction()
+        .setBytecodeFileId(bytecodeFileId)
+        .setGas(100000)
+        .setConstructorParameters(new ContractFunctionParameters().addString("Hello From Hedera!"));
 
+    const contractResponse = await contractTx.execute(client);
+    const contractReceipt = await contractResponse.getReceipt(client);
+    const newContractId = contractReceipt.contractId;
+    console.log("The Smart Contract Id id : " + newContractId);
 
     // Part 4a - Interact with the smart contract - get_message()
 
