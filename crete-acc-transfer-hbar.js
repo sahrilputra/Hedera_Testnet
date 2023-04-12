@@ -13,8 +13,15 @@ const createAccTransferHbar = async () => {
     // Part 2 - Create connection to the Hedera network
     const client = Client.forTestnet();
     client.setOperator(accountId, privateKey);
-    // Part 3 - Create new account
 
+    // Part 3 - Create new account
+    const newAccountPrivateKey = privateKey.generateED25519();
+    const newAccountPublicKey = newAccountPrivateKey.publicKey();
+    const newAccount = await new AccountCreateTransaction()
+        .setKey(newAccountPublicKey)
+        .setInitialBalance(Hbar.fromTinyBars(1000))
+        .execute(client);
+    
     // Part 4 - Get the new account's ID
 
     // Part 5 - Verify the new account's starting balance
