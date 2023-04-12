@@ -1,4 +1,12 @@
-const { Client, FileCreateTransaction, ContractCreateTransaction, ContractFunctionParameters } = require("@hashgraph/sdk");
+const {
+    Client,
+    FileCreateTransaction,
+    ContractCreateTransaction,
+    ContractFunctionParameters,
+    ContractCallQuery,
+    Hbar,
+    ContractExecuteTransaction
+} = require("@hashgraph/sdk");
 require("dotenv").config();
 
 async function helloWorld() {
@@ -32,9 +40,32 @@ async function helloWorld() {
     console.log("The Smart Contract Id id : " + newContractId);
 
     // Part 4a - Interact with the smart contract - get_message()
+    const contractQuery = await new ContractCallQuery()
+        .setGas(100000)
+        .setContractId(newContractId)
+        .setFunction("get_message")
+        .setQueryPayment(new Hbar(2));
 
+    const getMessage = await contractQuery.execute(client);
+    const message = getMessage.getString(0)
+    console.log("The Contract message :" + message);
 
     // Part 4b - Interact with the smart contract - set_message()
+    const contractExecTx = await new ContractExecuteTransaction()
+        .setContractId(newContractId)
+        .setGas(100000)
+        .setFunction("set_message", new ContractFunctionParameters().addString("SahrilPutra"));
+    const submitExecTx = await contractExecTx.execute(client);
+    const receipt2 = await submitExecTx.getReceipt(client);
+    console.log("The transaction status is " + receipt2.status.toString());
 
+    const contractCallQuery = new ContractCallQuery()
+        .setContractId(newContractId)
+        .setGas(100000)
+        .setFunction("get_message")
+        .setQueryPayment(new Hbar(2));
+    const contractUpdateResult = await contractCallQuery.execute(client);
+    const newMessage = contractUpdateResult.getString(0);
+    console.log("The updated contract message: " + newMessage);
 }
 helloWorld();
