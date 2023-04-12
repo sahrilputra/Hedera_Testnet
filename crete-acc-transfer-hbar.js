@@ -23,6 +23,9 @@ const createAccTransferHbar = async () => {
         .execute(client);
     
     // Part 4 - Get the new account's ID
+    const getReceipt = await newAccount.getReceipt(client);
+    const newAccountId = getReceipt.accountId;
+    console.log("New Account ID is : " + newAccount );
 
     // Part 5 - Verify the new account's starting balance
 
