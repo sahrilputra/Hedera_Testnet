@@ -6,6 +6,7 @@ const {
     TokenSupplyType,
     TokenType,
     TokenCreateTransaction,
+    TokenMintTransaction,
 
 } = require("@hashgraph/sdk");
 
@@ -37,7 +38,16 @@ async function createNonFungibleToken() {
     console.log(`- Created NFT with Token ID: ${tokenId} \n`);
 
     // Part 2 - Mint token
+    const CID = "ipfs://Qme5niYwb7b9dFimAgJwWYFUbxJ2rbM5MguV32Z4UuALmg/alice-nft-metadata.json";
+    let mintTx = await new TokenMintTransaction()
+        .setTokenId(tokenId)
+        .setMetadata([Buffer.from(CID)])
+        .freezeWith(client);
 
+    let mintTxSign = await mintTx.sign(aliceKey);
+    let mintTxSubmit = await mintTxSign.execute(client);
+    let mintRx = await mintTxSubmit.getReceipt(client);
+    console.log(`- Created NFT ${tokenId} with serial: ${mintRx.serials[0].low} \n`);
 
     // Part 3 - Associate token to user account
 
