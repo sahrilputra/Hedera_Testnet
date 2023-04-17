@@ -31,10 +31,42 @@ async function SCCreateNonFungibleToken() {
     console.log(`Contract created with ID: ${contractId} \n`);
 
     // Part 2 - Create NFT
+    const createToken = new ContractExecuteTransaction()
+        .setContractId(contractId)
+        .setGas(300000) // Increase if revert
+        .setPayableAmount(20) // Increase if revert
+        .setFunction(
+            "createNft",
+            new ContractFunctionParameters()
+                .addString("Fall Collection") // NFT name
+                .addString("LEAF") // NFT symbol
+                .addString("Just a memo") // NFT memo
+                .addInt64(250) // NFT max supply
+                .addUint32(7000000) // Expiration: Needs to be between 6999999 and 8000001
+        );
 
+    const createTokenTx = await createToken.execute(client);
+    const createTokenRx = await createTokenTx.getRecord(client);
+    const tokenIdSolidityAddr = createTokenRx.contractFunctionResult.getAddress(0);
+    let tokenId = AccountId.fromSolidityAddress(tokenIdSolidityAddr);
+    const tokenIdFromString = TokenId.fromString(tokenId.toString());
+    console.log(`Token created with ID: ${tokenId} \n`);
 
     // Part 3 - Mint NFT
-
+    metadata = "ipfs://bafyreie3ichmqul4xa7e6xcy34tylbuq2vf3gnjf7c55trg3b6xyjr4bku/metadata.json";
+    const mintToken = new ContractExecuteTransaction()
+        .setContractId(contractId)
+        .setGas(1000000)
+        .setFunction(
+            "mintNft",
+            new ContractFunctionParameters()
+                .addAddress(tokenIdSolidityAddr) // Token address
+                .addBytesArray([Buffer.from(metadata)]) // Metadata
+        );
+    const mintTokenTx = await mintToken.execute(client);
+    const mintTokenRx = await mintTokenTx.getRecord(client);
+    const serial = mintTokenRx.contractFunctionResult.getInt64(0);
+    console.log(`Minted NFT with serial: ${serial} \n`);
 
     // Part 4 - Associate NFT
 
