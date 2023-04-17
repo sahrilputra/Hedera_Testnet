@@ -47,6 +47,7 @@ async function createNonFungibleToken() {
         .setMetadata([Buffer.from(CID)])
         .freezeWith(client);
 
+
     let mintTxSign = await mintTx.sign(aliceKey);
     let mintTxSubmit = await mintTxSign.execute(client);
     let mintRx = await mintTxSubmit.getReceipt(client);
