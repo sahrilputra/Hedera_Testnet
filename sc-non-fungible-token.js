@@ -69,10 +69,26 @@ async function SCCreateNonFungibleToken() {
     console.log(`Minted NFT with serial: ${serial} \n`);
 
     // Part 4 - Associate NFT
-
+    const transaction = await new TokenAssociateTransaction().setAccountId(receiverId).setTokenIds([tokenIdFromString]).freezeWith(client);
+    const signTx = await transaction.sign(receiverKey);
+    const associateResponseTx = await signTx.execute(client)
 
     // Part 5 - Transfer NFT
-
+    const transferToken = await new ContractExecuteTransaction()
+        .setContractId(contractId)
+        .setGas(4000000)
+        .setFunction(
+            "transferNft",
+            new ContractFunctionParameters()
+                .addAddress(tokenIdSolidityAddr) // Token address
+                .addAddress(receiverId.toSolidityAddress()) // Token receiver
+                .addInt64(serial) // NFT serial number
+        )
+        .freezeWith(client) // Freeze using client
+        .sign(operatorKey); // Sign transaction with operator
+    const transferTokenTx = await transferToken.execute(client);
+    const transferTokenRx = await transferTokenTx.getReceipt(client);
+    console.log(`Transfer status: ${transferTokenRx.status} \n`);
 
 }
 SCCreateNonFungibleToken();
